@@ -8,6 +8,13 @@ from django.utils.translation import gettext_lazy as _
 from .managers import UserManager
 
 
+ROLES = (
+    ('cliente', 'Cliente'),
+    ('veterinario', 'Veterinario'),
+    ('sucursal', 'Sucursal')
+)
+
+
 class User(AbstractUser):
 
     groups = models.ManyToManyField(
@@ -20,6 +27,9 @@ class User(AbstractUser):
         related_name='custom_user_permissions',  # Cambia 'custom_user_permissions' por el nombre que prefieras
         blank=True
     )
+
+    phone = models.CharField(max_length=10, blank=True, null=True)
+    enum = models.CharField(max_length=20, choices=ROLES, default='cliente')
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
