@@ -30,7 +30,7 @@ from rest_framework_simplejwt.views import (
 )
 
 from rest_framework import routers
-from accounts.views import *
+from apps.accounts.views import *
 
 # Endpoint de la documentación
 

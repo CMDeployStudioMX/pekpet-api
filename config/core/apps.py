@@ -21,8 +21,7 @@ THIRD_APPS = [
 # Apps o módulos del proyecto
 
 LOCAL_APPS = [
-    'accounts',
-    'logs'
+    'apps.accounts',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + THIRD_APPS
