@@ -34,18 +34,18 @@ from apps.accounts.views import *
 
 # Endpoint de la documentación
 
-admin.site.site_header = "BASE Admin"
-admin.site.site_title = "BASE Admin Portal"
-admin.site.index_title = "Welcome to BASE Administration Portal"
-admin.site.site_url = "/api/v2/"
+admin.site.site_header = "PekPet API Administration"
+admin.site.site_title = "PekPet API Administration"
+admin.site.index_title = "Welcome to PekPet API Administration Portal"
+admin.site.site_url = "/api/v1/"
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="BASE API",
+        title="PekPet API",
         default_version='v2.0.0',
-        description="API Template",
+        description="API documentation for PekPet",
         terms_of_service="",
-        contact=openapi.Contact(email="devteam@paramq.com"),
+        contact=openapi.Contact(email="devteam@cmdeploystudio.com"),
         license=openapi.License(name="MIT License"),
     ),
     public=False,
@@ -83,7 +83,7 @@ api_urlpatterns = [
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', RedirectView.as_view(url='/admin/', permanent=True)),
-    path('api/v2/', include(api_urlpatterns)),
+    path('api/v1/', include(api_urlpatterns)),
     path('docs/', include(apidocs_urlpatterns)),
     path("accounts/", include("rest_framework.urls", namespace="rest_framework"))
 ]
