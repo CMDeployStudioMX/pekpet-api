@@ -2,6 +2,10 @@
 /.env.local
 /.env.testing
 /.env.prod
+/.env.*
+
+*.pyc
+__pycache__/
 
 # Folders
 .idea/
