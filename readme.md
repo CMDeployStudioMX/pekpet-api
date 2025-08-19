@@ -103,7 +103,7 @@ Para correr el proyecto necesitamos contar con las siguientes variables de entor
 export DEBUG=1
 
 # Es una palabra secreta alfanumérica que nos sirve para varios procesos, como hashear información
-export SECRET_KEY=P3kp3t0k3nS3cr3tK3y 
+export SECRET_KEY=""
 
 # Conexión a la base de datos
 
