@@ -35,7 +35,7 @@ Para el buen funcionamiento del proyecto y sus librerías, es recomendable tener
 
 ## Instalación del proyecto
 
-* Para ejecutar el proyecto, es necesario cumplir con los requerimientos técnicos.
+- Para ejecutar el proyecto, es necesario cumplir con los requerimientos técnicos.
 
 ### Pasos previos
 
