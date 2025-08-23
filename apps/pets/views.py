@@ -1,4 +1,7 @@
+from django.db import transaction
 from django.utils import timezone
+from django.conf import settings
+from datetime import timedelta
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets, permissions, mixins, decorators, response, status
 from .models import AnimalType, Breed, Pet, PetTransfer
@@ -28,7 +31,6 @@ class BreedViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def get_queryset(self):
         qs = Breed.objects.filter(is_active=True)
-        # filtro opcional por tipo: /api/breeds/?animal_type=dog  (slug) o id
         t = self.request.query_params.get("animal_type")
         if t:
             qs = qs.filter(animal_type__slug=t) | qs.filter(animal_type__id__iexact=t)
@@ -55,26 +57,67 @@ class PetViewSet(viewsets.ModelViewSet):
 
     @decorators.action(detail=True, methods=["post"], serializer_class=PetTransferStartSerializer)
     def start_transfer(self, request, pk=None):
-        pet = self.get_object()  # valida IsOwner
-        data = self.get_serializer(data=request.data); data.is_valid(raise_exception=True)
+        pet = self.get_object()  # IsOwner
+        data = self.get_serializer(data=request.data, context={"request": request})
+        data.is_valid(raise_exception=True)
         to_user = User.objects.get(id=data.validated_data["to_user_id"])
-        # token simple; puedes reemplazarlo por algo firmado
-        code = User.objects.make_random_password(length=12)
-        tr = PetTransfer.objects.create(pet=pet, from_user=request.user, to_user=to_user, code=code)
-        return response.Response({"transfer_code": tr.code, "status": tr.status}, status=status.HTTP_201_CREATED)
+
+        # cooldown
+        cooldown_days = int(getattr(settings, "PET_TRANSFER_COOLDOWN_DAYS", 7))
+        if pet.last_transferred_at:
+            next_allowed = pet.last_transferred_at + timedelta(days=cooldown_days)
+            if timezone.now() < next_allowed:
+                remaining = next_allowed - timezone.now()
+                remaining_days = (remaining.days + (1 if remaining.seconds else 0))
+                return response.Response(
+                    {"detail": f"No puedes transferir esta mascota aún. Inténtalo en ~{remaining_days} día(s)."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        # única pending
+        if PetTransfer.objects.filter(pet=pet, status="pending").exists():
+            return response.Response(
+                {"detail": "Ya existe una transferencia pendiente para esta mascota."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        tr = PetTransfer.start(pet=pet, from_user=request.user, to_user=to_user, ttl_hours=48)
+
+        return response.Response(
+            {"transfer_code": tr.code, "status": tr.status, "expires_at": tr.expires_at},
+            status=status.HTTP_201_CREATED
+        )
 
     @decorators.action(detail=True, methods=["post"], serializer_class=PetTransferAcceptSerializer,
                        permission_classes=[permissions.IsAuthenticated])
     def accept_transfer(self, request, pk=None):
-        pet = self.get_object()  # si no eres owner, sigue permitiendo para aceptar
-        data = self.get_serializer(data=request.data); data.is_valid(raise_exception=True)
-        try:
-            tr = PetTransfer.objects.get(pet=pet, to_user=request.user, status="pending", code=data.validated_data["code"])
-        except PetTransfer.DoesNotExist:
-            return response.Response({"detail": "Transferencia no encontrada"}, status=404)
-        pet.owner = request.user
-        pet.save(update_fields=["owner"])
-        tr.status = "accepted"
-        tr.accepted_at = timezone.now()
-        tr.save(update_fields=["status", "accepted_at"])
-        return response.Response({"detail": "Transferencia aceptada"})
+        with transaction.atomic():
+            pet = Pet.objects.select_for_update().get(pk=pk)
+            ser = self.get_serializer(data=request.data); ser.is_valid(raise_exception=True)
+            code = ser.validated_data["code"]
+
+            try:
+                tr = PetTransfer.objects.select_for_update().get(
+                    pet=pet, to_user=request.user, status="pending", code=code
+                )
+            except PetTransfer.DoesNotExist:
+                return response.Response({"detail": "Transferencia no encontrada o no autorizada."}, status=404)
+
+            if tr.is_expired():
+                tr.mark_cancelled()
+                return response.Response({"detail": "Transferencia expirada."}, status=400)
+
+            pet.owner = request.user
+            pet.save(update_fields=["owner"])
+            tr.mark_accepted()
+            return response.Response({"detail": "Transferencia aceptada"})
+
+    @decorators.action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated, IsOwner])
+    def cancel_transfer(self, request, pk=None):
+        pet = self.get_object()
+        updated = PetTransfer.objects.filter(pet=pet, status="pending").update(
+            status="cancelled", cancelled_at=timezone.now()
+        )
+        if updated == 0:
+            return response.Response({"detail": "No hay transferencias pendientes"}, status=404)
+        return response.Response({"detail": "Transferencia cancelada"})
