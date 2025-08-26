@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  ############
+  #  Django  #
+  ############
+  pekpet-api:
+    build:
+      context: . # Ruta al directorio que contiene tu Dockerfile
+      dockerfile: Dockerfile # Nombre de tu Dockerfile, si es diferente de 'Dockerfile'
+    image: pekpet-api
+    command: sh -c "python manage.py migrate && python manage.py && gunicorn config.wsgi --bind 0.0.0.0:8000 --workers 3 --log-level=DEBUG"
+    restart: unless-stopped
+    container_name: pekpet-api
+    networks:
+      - net-proxy
+    environment:
+      - VIRTUAL_HOST=pekpet-api-testing.devcrespo.tech
+      - VIRTUAL_PORT=8000
+      - LETSENCRYPT_HOST=pekpet-api-testing.devcrespo.tech
+    expose:
+      - 8000
+    env_file: .env
+
+networks:
+  net-proxy:
+    external: true

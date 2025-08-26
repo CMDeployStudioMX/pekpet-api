@@ -41,10 +41,11 @@ admin.site.site_url = "/api/v1/"
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="PetPet API",
-        default_version='v1.0.0',
-        description="PekPet API by CMDeploy",
+        title="BASE API",
+        default_version='v2.0.0',
+        description="API Template",
         terms_of_service="",
+        contact=openapi.Contact(email="devteam@cmdeploystudio.com"),
         contact=openapi.Contact(email="devteam@cmdeploystudio.com"),
         license=openapi.License(name="MIT License"),
     ),

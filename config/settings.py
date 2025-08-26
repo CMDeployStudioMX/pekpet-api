@@ -35,10 +35,12 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOST', '*').split(' ')
 
 # CSRF Dominios permitidos
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_ORIGINS', '*').split(' ')
-
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # Gestor de las cuentas
 AUTH_USER_MODEL = 'accounts.User'
-
+# DIas de ban por transferencia
+PET_TRANSFER_COOLDOWN_DAYS = int(os.getenv("PET_TRANSFER_COOLDOWN_DAYS", "7"))
 # Configuración del Token
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": datetime.timedelta(hours=4),

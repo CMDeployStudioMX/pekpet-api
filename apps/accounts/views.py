@@ -11,14 +11,3 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-    @action(detail=False, methods=['POST'], permission_classes=[permissions.AllowAny])
-    def client_register(self, request):
-        serializer = ClientSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            return Response({
-                'user': ClientSerializer(user).data,
-                'message': 'User created successfully.'
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
