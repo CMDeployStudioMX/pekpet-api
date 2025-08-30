@@ -6,26 +6,36 @@ import secrets
 import string
 
 
+SEX_CHOICES = [
+        ("M", "Macho"),
+        ("F", "Hembra")
+    ]
+
+STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("accepted", "Accepted"),
+        ("cancelled", "Cancelled"),
+    ]
+
 class AnimalType(models.Model):
+    id = models.AutoField(primary_key=True, editable=False)
     slug = models.SlugField(unique=True, max_length=40)
     name = models.CharField(max_length=80)
     is_active = models.BooleanField(default=True)
-
-    class Meta:
-        ordering = ["name"]
+    # created_at = models.DateTimeField(auto_now_add=True)
+    # updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
 
 
 class Breed(models.Model):
+    id = models.AutoField(primary_key=True, editable=False)
     animal_type = models.ForeignKey(AnimalType, on_delete=models.CASCADE, related_name="breeds")
     name = models.CharField(max_length=80)
     is_active = models.BooleanField(default=True)
-
-    class Meta:
-        unique_together = [("animal_type", "name")]
-        ordering = ["animal_type__name", "name"]
+    # created_at = models.DateTimeField(auto_now_add=True)
+    # updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.name} ({self.animal_type.name})"
@@ -36,8 +46,7 @@ def pet_photo_path(instance, filename):
 
 
 class Pet(models.Model):
-    SEX_CHOICES = [("M", "Macho"), ("F", "Hembra")]
-
+    id = models.AutoField(primary_key=True, editable=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="pets")
     name = models.CharField(max_length=80)
     animal_type = models.ForeignKey(AnimalType, on_delete=models.PROTECT, related_name="pets")
@@ -57,33 +66,26 @@ class Pet(models.Model):
     weight_kg = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     height_cm = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
-    photo = models.ImageField(upload_to=pet_photo_path, null=True, blank=True)
+    # photo = models.ImageField(upload_to=pet_photo_path, null=True, blank=True)
 
     is_active = models.BooleanField(default=True)
     last_transferred_at = models.DateTimeField(null=True, blank=True)  # cooldown
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        ordering = ["-created_at"]
 
     def __str__(self):
         return f"{self.name} – {self.animal_type.name}"
 
 
 class PetTransfer(models.Model):
-    STATUS = [
-        ("pending", "Pending"),
-        ("accepted", "Accepted"),
-        ("cancelled", "Cancelled"),
-    ]
-
+    id = models.AutoField(primary_key=True, editable=False)
     pet = models.ForeignKey(Pet, on_delete=models.CASCADE, related_name="transfers")
     from_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="pet_transfers_out")
     to_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="pet_transfers_in")
 
     code = models.CharField(max_length=16, db_index=True)
-    status = models.CharField(max_length=10, choices=STATUS, default="pending")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
 
     created_at = models.DateTimeField(auto_now_add=True)
     accepted_at = models.DateTimeField(null=True, blank=True)

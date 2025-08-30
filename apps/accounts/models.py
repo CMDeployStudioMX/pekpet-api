@@ -5,7 +5,10 @@ from .managers import UserManager
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from .managers import UserManager
+from django.conf import settings
+import secrets
+from datetime import timedelta
+from django.utils import timezone
 
 
 ROLES = (
@@ -29,7 +32,7 @@ class User(AbstractUser):
     )
 
     phone = models.CharField(max_length=10, blank=True, null=True)
-    enum = models.CharField(max_length=20, choices=ROLES, default='cliente')
+    role = models.CharField(max_length=20, choices=ROLES, default='cliente')
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
@@ -38,3 +41,24 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+    
+
+class VerificationCode(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+    
+    @classmethod
+    def generate_code(cls, user):
+        # Eliminar códigos antiguos
+        cls.objects.filter(user=user, created_at__lt=timezone.now() - timedelta(minutes=10)).delete()
+        
+        # Generar nuevo código
+        code = secrets.randbelow(1000000)
+        code_str = str(code).zfill(6)
+        
+        return cls.objects.create(user=user, code=code_str)
+    
+    def is_valid(self):
+        return (not self.is_used) and (timezone.now() <= self.created_at + timedelta(minutes=10))

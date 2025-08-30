@@ -46,7 +46,6 @@ schema_view = get_schema_view(
         description="API Template",
         terms_of_service="",
         contact=openapi.Contact(email="devteam@cmdeploystudio.com"),
-        contact=openapi.Contact(email="devteam@cmdeploystudio.com"),
         license=openapi.License(name="MIT License"),
     ),
     public=False,
