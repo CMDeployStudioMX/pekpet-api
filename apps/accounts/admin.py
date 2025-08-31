@@ -38,7 +38,7 @@ class AdminUser(auth_admin.UserAdmin):
 
 @admin.register(VerificationCode)
 class VerificationCodeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'code', 'created_at', 'is_used')
+    list_display = ('user', 'code', 'created_at', 'is_used', 'is_active')
     search_fields = ('user__email', 'code')
     list_filter = ('is_used', 'created_at')
     readonly_fields = ('created_at',)

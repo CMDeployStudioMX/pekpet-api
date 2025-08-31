@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from datetime import timedelta
 import logging
-
+from .emails import send_email
 from .serializers import UserSerializer
 from .authentication import TemporaryTokenAuthentication
 from .models import VerificationCode  # ← Importar el modelo
@@ -24,25 +24,17 @@ class UserViewSet(viewsets.ModelViewSet):
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
 
-    @action(detail=False, methods=['POST'], 
-            authentication_classes=[TemporaryTokenAuthentication])
+    @action(detail=False, methods=['POST'], authentication_classes=[TemporaryTokenAuthentication])
     def change_password(self, request):
         """
         Endpoint para cambiar contraseña - Requiere token temporal
         """
         user = request.user
-        current_password = request.data.get('current_password')
         new_password = request.data.get('new_password')
         
-        if not current_password or not new_password:
+        if not new_password:
             return Response(
                 {'error': 'current_password y new_password son requeridos'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        if not user.check_password(current_password):
-            return Response(
-                {'error': 'Contraseña actual incorrecta'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -73,17 +65,31 @@ class UserViewSet(viewsets.ModelViewSet):
             )
         
         try:
+            if VerificationCode.objects.filter(user=user, is_used=False, created_at__gte=timezone.now() - timedelta(minutes=5)).exists():
+                return Response(
+                    {'error': 'Ya se ha enviado un código recientemente. Revisa tu email.'}, 
+                    status=status.HTTP_429_TOO_MANY_REQUESTS
+                )
+
             # Generar código de verificación usando el modelo
             verification_code = VerificationCode.generate_code(user)
             
             # En producción: enviar por email/SMS (aquí solo logueamos)
             logger.info(f"Código de verificación para {email}: {verification_code.code}")
+
+            # Logica para enviar email
+            # send_email(verification_code.code, to_email=email)
             
             return Response({
                 'message': 'Código enviado exitosamente', 
                 'user_id': user.id,
-                # 'code': verification_code.code  # ← No enviar en producción!
+                'code': verification_code.code  # ← No enviar en producción!
             })
+
+            # return Response({
+            #     'message': 'Código enviado exitosamente', 
+            #     'user_id': user.id
+            # })
             
         except Exception as e:
             logger.error(f"Error generando código para {email}: {str(e)}")

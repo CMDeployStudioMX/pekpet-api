@@ -47,18 +47,25 @@ class VerificationCode(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     code = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
+    used_at = models.DateTimeField(null=True, blank=True)
     is_used = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     
     @classmethod
     def generate_code(cls, user):
         # Eliminar códigos antiguos
-        cls.objects.filter(user=user, created_at__lt=timezone.now() - timedelta(minutes=10)).delete()
+        cls.objects.filter(user=user, created_at__lt=timezone.now() - timedelta(minutes=5)).delete()
         
         # Generar nuevo código
         code = secrets.randbelow(1000000)
         code_str = str(code).zfill(6)
-        
+
         return cls.objects.create(user=user, code=code_str)
     
+    def mark_as_used(self):
+        """Marca el código como utilizado"""
+        self.is_used = True
+        self.save()
+
     def is_valid(self):
-        return (not self.is_used) and (timezone.now() <= self.created_at + timedelta(minutes=10))
+        return (not self.is_used) and (timezone.now() <= self.created_at + timedelta(minutes=5))
