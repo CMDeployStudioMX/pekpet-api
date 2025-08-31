@@ -3,7 +3,7 @@ from django.contrib.auth import admin as auth_admin
 from django.contrib.auth.forms import AdminPasswordChangeForm
 
 # Register your models here.
-from .models import User
+from .models import *
 from .forms import UserChangeForm, UserCreationForm
 
 @admin.register(User)
@@ -35,3 +35,10 @@ class AdminUser(auth_admin.UserAdmin):
     search_fields = ('email', 'username',)
     ordering = ('email',)
     readonly_fields = ('last_login', 'date_joined',)
+
+@admin.register(VerificationCode)
+class VerificationCodeAdmin(admin.ModelAdmin):
+    list_display = ('user', 'code', 'created_at', 'is_used')
+    search_fields = ('user__email', 'code')
+    list_filter = ('is_used', 'created_at')
+    readonly_fields = ('created_at',)
