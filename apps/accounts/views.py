@@ -94,23 +94,20 @@ class UserViewSet(viewsets.ModelViewSet):
 
             # Generar código de verificación usando el modelo
             verification_code = VerificationCode.generate_code(user)
-            
-            # En producción: enviar por email/SMS (aquí solo logueamos)
-            logger.info(f"Código de verificación para {email}: {verification_code.code}")
 
             # Logica para enviar email
             send_email(verification_code.code, to_email=email)
             
-            return Response({
-                'message': 'Código enviado exitosamente', 
-                'user_id': user.id,
-                'code': verification_code.code  # ← No enviar en producción!
-            })
-
             # return Response({
             #     'message': 'Código enviado exitosamente', 
-            #     'user_id': user.id
+            #     'user_id': user.id,
+            #     'code': verification_code.code  # ← No enviar en producción!
             # })
+
+            return Response({
+                'message': 'Código enviado exitosamente', 
+                'user_id': user.id
+            })
             
         except Exception as e:
             logger.error(f"Error generando código para {email}: {str(e)}")
