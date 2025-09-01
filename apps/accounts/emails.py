@@ -8,7 +8,7 @@ def send_email(code, to_email):
     text = f"""
     Tu codigo de verificación es: {code}
     \n
-    Este codigo es valido por 5 minutos. Si no solicitaste este codigo, ponte en contacto con nuestro soporte técnico.
+    Este codigo es válido por 5 minutos. Si no solicitaste este codigo, ponte en contacto con nuestro soporte técnico.
     \n
     Saludos,
     PekPet Team

@@ -78,7 +78,7 @@ class UserViewSet(viewsets.ModelViewSet):
             logger.info(f"Código de verificación para {email}: {verification_code.code}")
 
             # Logica para enviar email
-            # send_email(verification_code.code, to_email=email)
+            send_email(verification_code.code, to_email=email)
             
             return Response({
                 'message': 'Código enviado exitosamente', 
