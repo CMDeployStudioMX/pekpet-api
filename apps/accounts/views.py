@@ -20,9 +20,30 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_permissions(self):
-        if self.action in ['get_code', 'verify_code']:
+        if self.action in ['get_code', 'verify_code', 'client']:
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
+
+    @action(detail=False, methods=['POST'])
+    def client(self, request):
+        data = request.data
+        password = data.get('password')
+        if User.objects.filter(email=data.get('email'), is_active=True, is_staff=False, is_superuser=False).exists():
+            return Response({'error': 'El email ya está en uso'}, status=status.HTTP_400_BAD_REQUEST)
+        User.objects.create_user(
+            email=data.get('email'),
+            username=data.get('email'),
+            password=password,
+            first_name=data.get('first_name', ''),
+            last_name=data.get('last_name', ''),
+            role='client',
+            phone=data.get('phone', ''),
+            is_active=True,
+            is_staff=False,
+            is_superuser=False
+        )
+        # serializer = self.get_serializer(user)
+        return Response('Usuario creado exitosamente', status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['POST'], authentication_classes=[TemporaryTokenAuthentication])
     def change_password(self, request):
