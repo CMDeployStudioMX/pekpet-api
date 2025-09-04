@@ -2,7 +2,8 @@ from django.db import transaction
 from django.utils import timezone
 from django.conf import settings
 from datetime import timedelta
-from rest_framework import viewsets, permissions, decorators, response, status
+from rest_framework import viewsets, permissions, decorators, response, status, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import *
 from .serializers import *
 
@@ -28,12 +29,9 @@ class PetViewSet(viewsets.ModelViewSet):
     queryset = Pet.objects.filter(is_active=True)
     serializer_class = PetSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return Pet.objects.filter(owner=self.request.user, is_active=True).select_related("animal_type", "breed")
-
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['owner', 'animal_type', ]
+    search_fields = ['name', ]
 
     # @decorators.action(detail=True, methods=["POST"], serializer_class=PetPhotoSerializer)
     # def upload_photo(self, request, pk=None):
