@@ -56,7 +56,7 @@ class Migration(migrations.Migration):
                 ('curp', models.CharField(blank=True, max_length=30)),
                 ('weight_kg', models.DecimalField(blank=True, decimal_places=2, max_digits=5, null=True)),
                 ('height_cm', models.DecimalField(blank=True, decimal_places=2, max_digits=5, null=True)),
-                ('photo', models.ImageField(blank=True, null=True, upload_to=apps.pets.models.pet_photo_path)),
+                # ('photo', models.ImageField(blank=True, null=True, upload_to=apps.pets.models.pet_photo_path)),
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),

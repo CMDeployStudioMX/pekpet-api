@@ -2,16 +2,9 @@ from django.db import transaction
 from django.utils import timezone
 from django.conf import settings
 from datetime import timedelta
-from django.contrib.auth import get_user_model
-from rest_framework import viewsets, permissions, mixins, decorators, response, status
-from .models import AnimalType, Breed, Pet, PetTransfer
-from .serializers import (
-    AnimalTypeSerializer, BreedSerializer,
-    PetSerializer, PetPhotoSerializer,
-    PetTransferStartSerializer, PetTransferAcceptSerializer
-)
-
-User = get_user_model()
+from rest_framework import viewsets, permissions, decorators, response, status
+from .models import *
+from .serializers import *
 
 
 class IsOwner(permissions.BasePermission):
@@ -19,27 +12,22 @@ class IsOwner(permissions.BasePermission):
         return getattr(obj, "owner_id", None) == request.user.id
 
 
-class AnimalTypeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class AnimalTypeViewSet(viewsets.ModelViewSet):
     queryset = AnimalType.objects.filter(is_active=True)
     serializer_class = AnimalTypeSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
 
-class BreedViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class BreedViewSet(viewsets.ModelViewSet):
+    queryset = Breed.objects.filter(is_active=True)
     serializer_class = BreedSerializer
-    permission_classes = [permissions.AllowAny]
-
-    def get_queryset(self):
-        qs = Breed.objects.filter(is_active=True)
-        t = self.request.query_params.get("animal_type")
-        if t:
-            qs = qs.filter(animal_type__slug=t) | qs.filter(animal_type__id__iexact=t)
-        return qs
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class PetViewSet(viewsets.ModelViewSet):
+    queryset = Pet.objects.filter(is_active=True)
     serializer_class = PetSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwner]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Pet.objects.filter(owner=self.request.user, is_active=True).select_related("animal_type", "breed")
@@ -47,15 +35,15 @@ class PetViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-    @decorators.action(detail=True, methods=["post"], serializer_class=PetPhotoSerializer)
-    def upload_photo(self, request, pk=None):
-        pet = self.get_object()
-        ser = self.get_serializer(pet, data=request.data)
-        ser.is_valid(raise_exception=True)
-        ser.save()
-        return response.Response(PetSerializer(pet, context={"request": request}).data)
+    # @decorators.action(detail=True, methods=["POST"], serializer_class=PetPhotoSerializer)
+    # def upload_photo(self, request, pk=None):
+    #     pet = self.get_object()
+    #     ser = self.get_serializer(pet, data=request.data)
+    #     ser.is_valid(raise_exception=True)
+    #     ser.save()
+    #     return response.Response(PetSerializer(pet, context={"request": request}).data)
 
-    @decorators.action(detail=True, methods=["post"], serializer_class=PetTransferStartSerializer)
+    @decorators.action(detail=True, methods=["POST"], serializer_class=PetTransferStartSerializer)
     def start_transfer(self, request, pk=None):
         pet = self.get_object()  # IsOwner
         data = self.get_serializer(data=request.data, context={"request": request})
@@ -88,7 +76,7 @@ class PetViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED
         )
 
-    @decorators.action(detail=True, methods=["post"], serializer_class=PetTransferAcceptSerializer,
+    @decorators.action(detail=True, methods=["POST"], serializer_class=PetTransferAcceptSerializer,
                        permission_classes=[permissions.IsAuthenticated])
     def accept_transfer(self, request, pk=None):
         with transaction.atomic():
@@ -112,7 +100,7 @@ class PetViewSet(viewsets.ModelViewSet):
             tr.mark_accepted()
             return response.Response({"detail": "Transferencia aceptada"})
 
-    @decorators.action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated, IsOwner])
+    @decorators.action(detail=True, methods=["POST"], permission_classes=[permissions.IsAuthenticated, IsOwner])
     def cancel_transfer(self, request, pk=None):
         pet = self.get_object()
         updated = PetTransfer.objects.filter(pet=pet, status="pending").update(

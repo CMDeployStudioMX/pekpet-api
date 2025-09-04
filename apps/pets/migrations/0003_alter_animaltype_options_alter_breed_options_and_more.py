@@ -26,10 +26,10 @@ class Migration(migrations.Migration):
             name='breed',
             unique_together=set(),
         ),
-        migrations.RemoveField(
-            model_name='pet',
-            name='photo',
-        ),
+        # migrations.RemoveField(
+        #     model_name='pet',
+        #     name='photo',
+        # ),
         migrations.AlterField(
             model_name='animaltype',
             name='id',

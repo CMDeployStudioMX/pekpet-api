@@ -1,30 +1,26 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from .models import AnimalType, Breed, Pet, PetTransfer
-
-User = get_user_model()
+from .models import *
 
 
 class AnimalTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnimalType
-        fields = ["id", "slug", "name", "is_active"]
+        fields = "__all__"
 
 
 class BreedSerializer(serializers.ModelSerializer):
-    animal_type = AnimalTypeSerializer(read_only=True)
-    animal_type_id = serializers.PrimaryKeyRelatedField(
-        source="animal_type", queryset=AnimalType.objects.filter(is_active=True), write_only=True
-    )
-
     class Meta:
         model = Breed
-        fields = ["id", "name", "is_active", "animal_type", "animal_type_id"]
+        fields = "__all__"
 
+class BreedReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Breed
+        depth = 2
 
 class PetSerializer(serializers.ModelSerializer):
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
-    photo_url = serializers.SerializerMethodField()
+    # photo_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Pet
@@ -33,15 +29,15 @@ class PetSerializer(serializers.ModelSerializer):
             "birth_date", "emergency_phone", "address",
             "tattoos", "microchip", "neutered",
             "notes", "curp", "weight_kg", "height_cm",
-            "photo", "photo_url",
+            # "photo", "photo_url",
             "is_active", "last_transferred_at",
             "created_at", "updated_at",
         ]
         read_only_fields = ["id", "owner", "created_at", "updated_at", "photo_url", "last_transferred_at"]
 
-    def get_photo_url(self, obj):
-        request = self.context.get("request")
-        return request.build_absolute_uri(obj.photo.url) if (request and obj.photo) else None
+    # def get_photo_url(self, obj):
+    #     request = self.context.get("request")
+    #     return request.build_absolute_uri(obj.photo.url) if (request and obj.photo) else None
 
     def validate(self, attrs):
         animal_type = attrs.get("animal_type") or getattr(self.instance, "animal_type", None)

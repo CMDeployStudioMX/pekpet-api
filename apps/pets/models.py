@@ -22,8 +22,8 @@ class AnimalType(models.Model):
     slug = models.SlugField(unique=True, max_length=40)
     name = models.CharField(max_length=80)
     is_active = models.BooleanField(default=True)
-    # created_at = models.DateTimeField(auto_now_add=True)
-    # updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -34,15 +34,14 @@ class Breed(models.Model):
     animal_type = models.ForeignKey(AnimalType, on_delete=models.CASCADE, related_name="breeds")
     name = models.CharField(max_length=80)
     is_active = models.BooleanField(default=True)
-    # created_at = models.DateTimeField(auto_now_add=True)
-    # updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.name} ({self.animal_type.name})"
+        return self.id
 
-
-def pet_photo_path(instance, filename):
-    return f"pets/{instance.owner_id}/{instance.id or 'new'}/{filename}"
+    # def pet_photo_path(instance, filename):
+    #     return f"pets/{instance.owner_id}/{instance.id or 'new'}/{filename}"
 
 
 class Pet(models.Model):
@@ -69,13 +68,13 @@ class Pet(models.Model):
     # photo = models.ImageField(upload_to=pet_photo_path, null=True, blank=True)
 
     is_active = models.BooleanField(default=True)
-    last_transferred_at = models.DateTimeField(null=True, blank=True)  # cooldown
+    last_transferred_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 
     def __str__(self):
-        return f"{self.name} – {self.animal_type.name}"
+        return f"{self.id}"
 
 
 class PetTransfer(models.Model):
@@ -121,7 +120,6 @@ class PetTransfer(models.Model):
         self.status = "accepted"
         self.accepted_at = timezone.now()
         self.save(update_fields=["status", "accepted_at"])
-        # cooldown: actualizar Pet
         pet = self.pet
         pet.last_transferred_at = self.accepted_at
         pet.save(update_fields=["last_transferred_at"])

@@ -31,6 +31,7 @@ from rest_framework_simplejwt.views import (
 
 from rest_framework import routers
 from apps.accounts.views import *
+from apps.pets.views import *
 
 # Endpoint de la documentación
 
@@ -70,6 +71,10 @@ auth_urlpatterns = [
 # Rutas de los módulos
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
+# Rutas para el módulo de mascotas
+router.register(r'animal-types', AnimalTypeViewSet)
+router.register(r'breeds', BreedViewSet)
+router.register(r'pets', PetViewSet)
 
 # Rutas exclusivas de la API
 
