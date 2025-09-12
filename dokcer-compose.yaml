@@ -23,4 +23,4 @@ services:
 
 networks:
   net-proxy:
-    external: true
+    external: true  
