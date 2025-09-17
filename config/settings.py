@@ -39,11 +39,12 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # Gestor de las cuentas
 AUTH_USER_MODEL = 'accounts.User'
-# DIas de ban por transferencia
+# Dias de ban por transferencia
 PET_TRANSFER_COOLDOWN_DAYS = int(os.getenv("PET_TRANSFER_COOLDOWN_DAYS", "7"))
+
 # Configuración del Token
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(hours=4),
+    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(hours=2),
     "REFRESH_TOKEN_LIFETIME": datetime.timedelta(days=1),
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "id",
