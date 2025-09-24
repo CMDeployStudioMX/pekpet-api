@@ -27,7 +27,7 @@ class AnimalType(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.id
+        return f"{self.id} - {self.name}"
 
 
 class Breed(models.Model):
@@ -39,7 +39,7 @@ class Breed(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.id
+        return f"{self.id} - {self.name}"
 
 
 class Pet(models.Model):
@@ -64,6 +64,8 @@ class Pet(models.Model):
     weight_kg = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     height_cm = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
+    photo = models.FileField(upload_to='pets/photos/', null=True, blank=True)
+
     is_active = models.BooleanField(default=True)
     last_transferred_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -71,7 +73,7 @@ class Pet(models.Model):
 
 
     def __str__(self):
-        return self.id
+        return f"{self.id} - {self.name}"
 
 
 class PetTransfer(models.Model):
