@@ -74,7 +74,7 @@ router.register(r'users', UserViewSet)
 # Rutas para el módulo de mascotas
 router.register(r'animal-types', AnimalTypeViewSet)
 router.register(r'breeds', BreedViewSet)
-router.register(r'pets', PetViewSet)
+# router.register(r'pets', PetViewSet)
 
 # Rutas exclusivas de la API
 

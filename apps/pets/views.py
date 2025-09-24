@@ -8,22 +8,15 @@ from .models import *
 from .serializers import *
 
 
-class IsOwner(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return getattr(obj, "owner_id", None) == request.user.id
-
-
 class AnimalTypeViewSet(viewsets.ModelViewSet):
     queryset = AnimalType.objects.filter(is_active=True)
     serializer_class = AnimalTypeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-
 class BreedViewSet(viewsets.ModelViewSet):
     queryset = Breed.objects.filter(is_active=True)
     serializer_class = BreedSerializer
     permission_classes = [permissions.IsAuthenticated]
-
 
 class PetViewSet(viewsets.ModelViewSet):
     queryset = Pet.objects.filter(is_active=True)
@@ -98,7 +91,7 @@ class PetViewSet(viewsets.ModelViewSet):
             tr.mark_accepted()
             return response.Response({"detail": "Transferencia aceptada"})
 
-    @decorators.action(detail=True, methods=["POST"], permission_classes=[permissions.IsAuthenticated, IsOwner])
+    @decorators.action(detail=True, methods=["POST"], permission_classes=[permissions.IsAuthenticated])
     def cancel_transfer(self, request, pk=None):
         pet = self.get_object()
         updated = PetTransfer.objects.filter(pet=pet, status="pending").update(
