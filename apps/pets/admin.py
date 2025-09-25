@@ -15,8 +15,8 @@ class BreedAdmin(admin.ModelAdmin):
 
 @admin.register(Pet)
 class PetAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "animal_type", "breed", "owner", "is_active", "last_transferred_at", "created_at")
-    list_filter  = ("animal_type", "breed", "is_active")
+    list_display = ("id", "name", "breed", "owner", "is_active", "last_transferred_at", "created_at")
+    list_filter  = ("breed", "is_active")
     search_fields = ("name", "owner__email", "owner__username")
 
 @admin.register(PetTransfer)

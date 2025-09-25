@@ -47,7 +47,7 @@ class Pet(models.Model):
     is_active = models.BooleanField(default=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="pets")
     name = models.CharField(max_length=80)
-    animal_type = models.ForeignKey(AnimalType, on_delete=models.PROTECT, related_name="pets")
+    # animal_type = models.ForeignKey(AnimalType, on_delete=models.PROTECT, related_name="pets")
     breed = models.ForeignKey(Breed, on_delete=models.SET_NULL, null=True, blank=True, related_name="pets")
     sex = models.CharField(max_length=1, choices=SEX_CHOICES, blank=True)
 
