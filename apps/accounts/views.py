@@ -43,7 +43,7 @@ class UserViewSet(viewsets.ModelViewSet):
             is_superuser=False
         )
         # serializer = self.get_serializer(user)
-        return Response('Usuario creado exitosamente', status=status.HTTP_201_CREATED)
+        return Response({ 'message': 'Usuario creado exitosamente' }, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['POST'], authentication_classes=[TemporaryTokenAuthentication])
     def change_password(self, request):
