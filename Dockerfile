@@ -1,5 +1,5 @@
 # pull official base image
-FROM python:3.10-buster
+FROM python:3.10
 
 # set work directory
 WORKDIR /code
