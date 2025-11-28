@@ -1,0 +1,78 @@
+import boto3
+import json
+import os
+import sys
+from botocore.client import Config
+
+def load_env_file(filepath):
+    """Carga variables de entorno desde un archivo .env si python-dotenv no está disponible."""
+    env_vars = {}
+    if os.path.exists(filepath):
+        with open(filepath, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                key, value = line.split('=', 1)
+                value = value.strip("'\"")
+                env_vars[key.strip()] = value
+    return env_vars
+
+def set_public_policy(bucket_name):
+    # Cargar credenciales
+    env_vars = load_env_file('.env.local')
+
+    # Obtener configuración
+    endpoint = env_vars.get('AWS_S3_ENDPOINT_URL') or os.environ.get('AWS_S3_ENDPOINT_URL') or "https://s3.pek-pet.com"
+    access_key = env_vars.get('AWS_ACCESS_KEY_ID') or os.environ.get('AWS_ACCESS_KEY_ID')
+    secret_key = env_vars.get('AWS_SECRET_ACCESS_KEY') or os.environ.get('AWS_SECRET_ACCESS_KEY')
+    region = env_vars.get('AWS_S3_REGION_NAME') or os.environ.get('AWS_S3_REGION_NAME') or 'us-east-1'
+
+    if not access_key or not secret_key:
+        print("Error: No se encontraron las credenciales AWS_ACCESS_KEY_ID o AWS_SECRET_ACCESS_KEY en .env.local o variables de entorno.")
+        return
+
+    print(f"Conectando a {endpoint}...")
+    
+    s3 = boto3.client('s3',
+        endpoint_url=endpoint,
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key,
+        config=Config(signature_version='s3v4'),
+        region_name=region
+    )
+
+    # Política para lectura pública (Public Read)
+    policy = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "PublicReadGetObject",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": "s3:GetObject",
+                "Resource": f"arn:aws:s3:::{bucket_name}/*"
+            }
+        ]
+    }
+
+    try:
+        print(f"Aplicando política pública al bucket: '{bucket_name}'...")
+        s3.put_bucket_policy(Bucket=bucket_name, Policy=json.dumps(policy))
+        print(f"¡Éxito! El bucket '{bucket_name}' ahora es público.")
+        print(f"Los archivos son accesibles en: {endpoint}/{bucket_name}/<archivo>")
+    except s3.exceptions.NoSuchBucket:
+        print(f"Error: El bucket '{bucket_name}' no existe.")
+    except Exception as e:
+        print(f"Error al aplicar la política: {e}")
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        bucket_name = sys.argv[1]
+    else:
+        bucket_name = input("Introduce el nombre del bucket para hacerlo público: ").strip()
+    
+    if bucket_name:
+        set_public_policy(bucket_name)
+    else:
+        print("Se requiere un nombre de bucket.")

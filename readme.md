@@ -159,3 +159,15 @@ python manage.py runserver
 ```
 
 Y con esto podremos acceder al Django admin o a los otros apartados.
+
+## Establecer un bucket público
+
+```python
+python set_bucket_public.py nombre-de-tu-bucket
+```
+
+## Eliminar un bucket
+
+```python
+python delete_bucket.py nombre-de-tu-bucket
+```

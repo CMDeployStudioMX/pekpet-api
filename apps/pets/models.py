@@ -23,8 +23,8 @@ class AnimalType(models.Model):
     slug = models.SlugField(unique=True, max_length=40)
     name = models.CharField(max_length=80)
     is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     def __str__(self):
         return f"{self.id} - {self.name}"
@@ -35,8 +35,8 @@ class Breed(models.Model):
     animal_type = models.ForeignKey(AnimalType, on_delete=models.CASCADE, related_name="breeds")
     name = models.CharField(max_length=80)
     is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     def __str__(self):
         return f"{self.id} - {self.name}"
@@ -68,8 +68,8 @@ class Pet(models.Model):
 
     is_active = models.BooleanField(default=True)
     last_transferred_at = models.DateTimeField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
 
     def __str__(self):

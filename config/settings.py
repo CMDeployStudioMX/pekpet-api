@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 import dj_database_url
 import datetime
+import urllib3
+
+# Suprimir advertencias de solicitudes HTTPS no verificadas (útil para desarrollo local con MinIO)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from pathlib import Path
 from .core.db_connection import *
@@ -130,7 +134,7 @@ AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'us-east-1')
 AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN')  # Opcional: dominio personalizado
 AWS_S3_USE_SSL = bool(int(os.environ.get('AWS_S3_USE_SSL', '1')))
 AWS_S3_VERIFY = bool(int(os.environ.get('AWS_S3_VERIFY', '1')))
-AWS_DEFAULT_ACL = os.environ.get('AWS_DEFAULT_ACL', 'public-read')
+AWS_DEFAULT_ACL = os.environ.get('AWS_DEFAULT_ACL', None)
 AWS_QUERYSTRING_AUTH = bool(int(os.environ.get('AWS_QUERYSTRING_AUTH', '0')))
 
 # Configuración de almacenamiento para medios (media files)

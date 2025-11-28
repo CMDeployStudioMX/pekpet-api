@@ -191,43 +191,35 @@ class PetViewSet(viewsets.ModelViewSet):
     search_fields = ['name', ]
 
 
+    def list(self, request, *args, **kwargs):
+        """
+        Lista todos los AnimalType activos
+        """
+        return super().list(request, *args, **kwargs)
+
+
     def create(self, request, *args, **kwargs):
         # Copiar los datos para poder modificarlos
         data = request.data.copy()
         
         # Extraer los campos auxiliares
-        # animal_type_slug = data.pop('animal_type_slug', None)
-        breed_slug = data.pop('breed_slug', None)
+        breed = data.pop('breed', None)[0]
         owner_email = data.pop('owner_email', None)
-        
-        # Validar animal_type_slug (requerido)
-        # if not animal_type_slug:
-        #     return Response(
-        #         {'animal_type_slug': 'Este campo es requerido'},
-        #         status=status.HTTP_400_BAD_REQUEST
-        #     )
-        
-        # Obtener AnimalType
-        # try:
-        #     animal_type = AnimalType.objects.get(slug=animal_type_slug, is_active=True)
-        #     data['animal_type'] = animal_type.id  # Asignar el ID al campo del modelo
-        # except AnimalType.DoesNotExist:
-        #     return Response(
-        #         {'animal_type_slug': f"AnimalType con slug '{animal_type_slug}' no encontrado"},
-        #         status=status.HTTP_400_BAD_REQUEST
-        #     )
-        
+
+        # Extraer e instanciar la raza del animal
+        # breed_instance = Breed.objects.filter(id=data.pop('breed')[0]).first() if 'breed' in data else None
+
         # Obtener Breed si se proporciona
-        if breed_slug:
+        if breed:
             try:
                 breed = Breed.objects.get(
-                    slug=breed_slug, 
+                    id=breed, 
                     is_active=True
                 )
                 data['breed'] = breed.id  # Asignar el ID al campo del modelo
             except Breed.DoesNotExist:
                 return Response(
-                    {'breed_slug': f"Raza '{breed_slug}' no encontrada"},
+                    {'breed': f"Raza '{breed}' no encontrada"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
         
@@ -251,13 +243,6 @@ class PetViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    # @decorators.action(detail=True, methods=["POST"], serializer_class=PetPhotoSerializer)
-    # def upload_photo(self, request, pk=None):
-    #     pet = self.get_object()
-    #     ser = self.get_serializer(pet, data=request.data)
-    #     ser.is_valid(raise_exception=True)
-    #     ser.save()
-    #     return response.Response(PetSerializer(pet, context={"request": request}).data)
 
     @action(detail=True, methods=["POST"], serializer_class=PetTransferStartSerializer)
     def start_transfer(self, request, pk=None):

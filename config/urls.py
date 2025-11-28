@@ -71,7 +71,7 @@ auth_urlpatterns = [
 # Rutas de los módulos
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
-# Rutas para el módulo de mascotas
+# Rutas para el módulo de mascota
 router.register(r'animal-types', AnimalTypeViewSet)
 router.register(r'breeds', BreedViewSet)
 router.register(r'pets', PetViewSet)

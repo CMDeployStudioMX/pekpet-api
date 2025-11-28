@@ -83,31 +83,10 @@ class BreedBulkCreateSerializer(serializers.Serializer):
 
 class PetSerializer(serializers.ModelSerializer):
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
-    # photo_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Pet
-        fields = [
-            "id", "owner", "name", "breed", "sex",
-            "birth_date", "emergency_phone", "address",
-            "tattoos", "microchip", "neutered",
-            "notes", "curp", "weight_kg", "height_cm",
-            # "photo", "photo_url",
-            "is_active", "last_transferred_at",
-            "created_at", "updated_at",
-        ]
-        read_only_fields = ["id", "owner", "created_at", "updated_at", "photo_url", "last_transferred_at"]
-
-    # def get_photo_url(self, obj):
-    #     request = self.context.get("request")
-    #     return request.build_absolute_uri(obj.photo.url) if (request and obj.photo) else None
-
-    # def validate(self, attrs):
-    #     animal_type = attrs.get("animal_type") or getattr(self.instance, "animal_type", None)
-    #     breed = attrs.get("breed") or getattr(self.instance, "breed", None)
-    #     if breed and animal_type and breed.animal_type_id != animal_type.id:
-    #         raise serializers.ValidationError("La raza no pertenece al tipo de animal indicado.")
-    #     return attrs
+        fields = "__all__"
 
     def create(self, validated_data):
         validated_data["owner"] = self.context["request"].user
