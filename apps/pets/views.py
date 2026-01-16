@@ -244,7 +244,7 @@ class PetViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-    @action(detail=True, methods=["POST"], serializer_class=PetTransferStartSerializer)
+    @action(detail=False, methods=["POST"], serializer_class=PetTransferStartSerializer)
     def start_transfer(self, request, pk=None):
         pet = self.get_object()  # IsOwner
         data = self.get_serializer(data=request.data, context={"request": request})
@@ -277,11 +277,10 @@ class PetViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED
         )
 
-    @action(detail=True, methods=["POST"], serializer_class=PetTransferAcceptSerializer,
-                       permission_classes=[permissions.IsAuthenticated])
+    @action(detail=False, methods=["POST"], serializer_class=PetTransferAcceptSerializer, permission_classes=[permissions.IsAuthenticated])
     def accept_transfer(self, request, pk=None):
         with transaction.atomic():
-            pet = Pet.objects.select_for_update().get(pk=pk)
+            pet = Pet.objects.select_for_update().get(code=code)
             ser = self.get_serializer(data=request.data); ser.is_valid(raise_exception=True)
             code = ser.validated_data["code"]
 

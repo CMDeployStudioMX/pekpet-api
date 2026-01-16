@@ -20,7 +20,7 @@ def load_env_file(filepath):
 
 def set_public_policy(bucket_name):
     # Cargar credenciales
-    env_vars = load_env_file('.env.local')
+    env_vars = load_env_file('.env')
 
     # Obtener configuración
     endpoint = env_vars.get('AWS_S3_ENDPOINT_URL') or os.environ.get('AWS_S3_ENDPOINT_URL') or "https://s3.pek-pet.com"
