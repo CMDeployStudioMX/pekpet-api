@@ -104,11 +104,11 @@ class PetTransferStartSerializer(serializers.Serializer):
 
     def validate_to_user_id(self, value):
         try:
-            user = User.objects.get(id=value)
+            user = User.objects.get(email=value)
         except User.DoesNotExist:
             raise serializers.ValidationError("Usuario destino no existe.")
         request = self.context["request"]
-        if request.user.id == user.id:
+        if request.user.email == user.email:
             raise serializers.ValidationError("El receptor no puede ser el mismo que el emisor.")
         return value
 

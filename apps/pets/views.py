@@ -249,7 +249,7 @@ class PetViewSet(viewsets.ModelViewSet):
         pet = self.get_object()  # IsOwner
         data = self.get_serializer(data=request.data, context={"request": request})
         data.is_valid(raise_exception=True)
-        to_user = User.objects.get(id=data.validated_data["to_user_id"])
+        to_user = User.objects.get(email=data.validated_data["to_user_email"])
 
         # cooldown
         cooldown_days = int(getattr(settings, "PET_TRANSFER_COOLDOWN_DAYS", 7))
